@@ -7,14 +7,20 @@ public class Movie {
     private String overview;
     private String backdrop_path;
     private String release_date;
+    private String id;
 
-    public Movie(String title,String original_title,String poster_path,String overview,String backdrop_path,String release_date){
+    public Movie(String id ,String title,String original_title,String poster_path,String overview,String backdrop_path,String release_date){
+        this.id = id;
         this.title = title;
         this.original_title = original_title;
         this.poster_path = poster_path;
         this.overview = overview;
         this.backdrop_path = backdrop_path;
         this.release_date = release_date;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getTitle() {

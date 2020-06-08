@@ -50,6 +50,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                 intent.putExtra("poster",movieList.get(position).getPoster_path());
                 intent.putExtra("overview",movieList.get(position).getOverview());
                 intent.putExtra("release_date",movieList.get(position).getRelease_date());
+                intent.putExtra("id",movieList.get(position).getId());
                 context.startActivity(intent);
             }
         });

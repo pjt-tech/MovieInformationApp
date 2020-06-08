@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.widget.Toast;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -18,22 +20,22 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private ArrayList<Movie> movieList;
+    ArrayList<Movie> movieList;
     private MyAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         recyclerView = findViewById(R.id.recycler);
-        movieList = new ArrayList<Movie>();
+        movieList = new ArrayList<>();
 
+        //OkHttp 쓰레드
         Mytask mytask = new Mytask();
         mytask.execute();
+
         //리싸이클러뷰의 그리드를 사용하여 출력
         recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this,2));
-
     }
 
     public class Mytask extends AsyncTask<String, Void, Movie[]>{
@@ -62,10 +64,16 @@ public class MainActivity extends AppCompatActivity {
                 JsonElement rootObject = parser.parse(response.body().charStream()).getAsJsonObject().get("results");
                 Movie[] posts = gson.fromJson(rootObject, Movie[].class);
                 return posts;
+
             }catch (Exception e){
                 e.printStackTrace();
             }
             return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
         }
 
         @Override
@@ -78,11 +86,10 @@ public class MainActivity extends AppCompatActivity {
                 for(Movie p : movies){
                     movieList.add(p);
                 }
+                adapter = new MyAdapter(MainActivity.this,movieList);
+                recyclerView.setAdapter(adapter);
             }
-            adapter = new MyAdapter(MainActivity.this,movieList);
-            recyclerView.setAdapter(adapter);
         }
     }
-
 }
 
