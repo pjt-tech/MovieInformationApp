@@ -1,6 +1,7 @@
 package com.kye.movieinformationapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,9 +36,23 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
         String url = "https://image.tmdb.org/t/p/w500" + movieList.get(position).getPoster_path();
         Glide.with(context).load(url).centerCrop().crossFade().into(holder.imageView);
+
+        //리싸이클러뷰 각 아이템 터치 이벤트
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context,DetailActivity.class);
+                intent.putExtra("title",movieList.get(position).getTitle());
+                intent.putExtra("original_title",movieList.get(position).getOriginal_title());
+                intent.putExtra("poster",movieList.get(position).getPoster_path());
+                intent.putExtra("overview",movieList.get(position).getOverview());
+                intent.putExtra("release_date",movieList.get(position).getRelease_date());
+                context.startActivity(intent);
+            }
+        });
 
     }
 
