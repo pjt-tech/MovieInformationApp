@@ -33,8 +33,8 @@ public class DetailActivity extends YouTubeBaseActivity {
     ArrayList<Youtube> youtubelist;
 
     private YouTubePlayerView youTubePlayerView;
-    private String trail;
-    private String id;
+    private String trail;   //youtube 키 값을 담을 변수
+    private String id; // trailer 구분하기위한 Id 를 담을 변수
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,7 @@ public class DetailActivity extends YouTubeBaseActivity {
         original_title = intent.getStringExtra("original_title");
         release_date = intent.getStringExtra("release_date");
         overview = intent.getStringExtra("overview");
+        //poster
         img_poster = "https://image.tmdb.org/t/p/w500"+intent.getStringExtra("poster");
         Glide.with(this).load(img_poster).centerCrop().crossFade().into(poster);
 
@@ -67,6 +68,7 @@ public class DetailActivity extends YouTubeBaseActivity {
         txt_release_date.setText(release_date);
         txt_overview.setText(overview);
 
+        //OkHttp
         YoutubeAsynctask asynctask = new YoutubeAsynctask();
         asynctask.execute(id);
 
@@ -88,16 +90,18 @@ public class DetailActivity extends YouTubeBaseActivity {
 
     public class YoutubeAsynctask extends AsyncTask<String, Void, Youtube[]>{
 
+        //youtube trailer 영상 키 값을 가져오기위해 request요청을 해야함
         @Override
         protected Youtube[] doInBackground(String... strings) {
             String id = strings[0];
-
+            //id에 해당하는 Json 데이터로 접근
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
                     .url("https://api.themoviedb.org/3/movie/"+id+"/videos?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7")
                     .build();
 
             try{
+                //받아온 Json 데이터를 Gson 으로 변환 저장
                 Response response = client.newCall(request).execute();
                 Gson gson = new GsonBuilder().create();
                 JsonParser parser = new JsonParser();
@@ -116,6 +120,7 @@ public class DetailActivity extends YouTubeBaseActivity {
         protected void onPostExecute(Youtube[] youtubes) {
             super.onPostExecute(youtubes);
 
+            //arraylist 더해준뒤 playVideo() 메소드에 키 값 전달
             if(youtubes.length>0){
                 for(Youtube p : youtubes){
                     youtubelist.add(p);
