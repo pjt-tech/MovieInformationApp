@@ -2,9 +2,12 @@ package com.kye.movieinformationapp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +27,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.kye.movieinformationapp.data.Movie;
+import com.kye.movieinformationapp.data.MyAdapter;
+
 import java.util.ArrayList;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -35,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Movie> movieList;
     private MyAdapter adapter;
     AlertDialog.Builder builder;
-
+    String startMode = "mv";
+    DrawerLayout drawerLayout;
+    ActionBarDrawerToggle toggle;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -43,72 +51,62 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.recycler);
+        drawerLayout = findViewById(R.id.drawerlayout);
         movieList = new ArrayList<>();
+        builder = new AlertDialog.Builder(this);
 
+        //툴바 수동 설정
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(Color.parseColor("#ffffff"));
         setSupportActionBar(toolbar);
 
+        toggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.drawer_open,R.string.drawer_close) {};
+        toggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_hamburger_menu);
+
         //처음 실행하면 최신영화정보를 띄움
         String search_url = "https://api.themoviedb.org/3/movie/upcoming?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&language=ko-KR&page=1";
         String[] strings = {search_url};
-
         Mytask mytask = new Mytask();
         mytask.execute(strings);
 
         //리싸이클러뷰의 그리드를 사용하여 출력
         recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this,2));
-
-        builder = new AlertDialog.Builder(this);
-    }
-
-
-    @Override
-    public void onBackPressed() {
-
-        builder.setTitle("프로그램 종료").setMessage("정말 종료하시겠습니까?");
-        builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-
-        builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Snackbar.make(recyclerView,"종료가 취소되었습니다.",Snackbar.LENGTH_SHORT).show();
-            }
-        });
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-
     }
 
     //툴바의 SearchView 설정
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.menu, menu);
 
-        //SearchView 를 통하여 사용자의 입력과 영화의 제목이 맞는게 있다면 AsyncTask 를 통하여 다시 정보를 가져와 띄움
+        //SearchView 를 통하여 사용자의 입력과 영화 & 드라마 제목이 맞는게 있다면 AsyncTask 를 통하여 다시 정보를 가져와 띄움
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView)searchItem.getActionView();
-        searchView.setQueryHint("영화제목을 입력하세요.");
 
+        searchView.setQueryHint("제목을 입력하세요.");
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
 
-                String search_url = "https://api.themoviedb.org/3/search/movie?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&query="+query+"&language=ko-KR&page=1";
+                String search_url;
+
+                if(startMode.equals("mv")){
+                    search_url = "https://api.themoviedb.org/3/search/movie?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&query="+query+"&language=ko-KR&page=1";
+                    Toast.makeText(getApplicationContext(),query+"에 대한 영화를 검색했습니다.",Toast.LENGTH_SHORT).show();
+                }else{
+                    search_url = "https://api.themoviedb.org/3/search/tv?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&query="+query+"&language=kR&page=1";
+                    Toast.makeText(getApplicationContext(),query+"에 대한 드라마를 검색했습니다.",Toast.LENGTH_SHORT).show();
+                }
                 String[] strings = {search_url};
 
                 //OkHttp 쓰레드
                 Mytask mytask = new Mytask();
                 mytask.execute(strings);
-                Toast.makeText(getApplicationContext(),query+"에 대한 영화를 검색했습니다.",Toast.LENGTH_SHORT).show();
+
                 return false;
             }
 
@@ -121,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
     //툴바의 메뉴 아이템 클릭관련 설정
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -132,23 +129,62 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_search:
                 return true;
 
-            case R.id.action_back:
+            case R.id.action_movie:
+                //처음 최신영화 추천정보를 다시 받아옴
                 String search_url = "https://api.themoviedb.org/3/movie/upcoming?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&language=ko-KR&page=1";
                 String[] strings = {search_url};
                 Mytask mytask = new Mytask();
                 mytask.execute(strings);
-
+                startMode = "mv";
                 return true;
 
-            case R.id.action_settings:
-                Snackbar.make(recyclerView,"준비중..",Snackbar.LENGTH_LONG).show();
+            case R.id.action_tv:
+                String search_url1 = "https://api.themoviedb.org/3/tv/popular?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&language=ko-KR&page=1";
+                String[] strings1 = {search_url1};
+                Mytask mytask1 = new Mytask();
+                mytask1.execute(strings1);
+                startMode = "tv";
                 return true;
 
                 default:
-                Toast.makeText(getApplicationContext(),"default..",Toast.LENGTH_SHORT).show();
+                    if (toggle.onOptionsItemSelected(item)) {
+                        return true;
+                    }
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
+    @Override
+    public void onBackPressed() {
+
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }else{
+            //뒤로가기버튼 클릭 시 이벤트 처리
+
+            builder.setTitle("프로그램 종료").setMessage("정말 종료하시겠습니까?");
+            builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+
+            builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Snackbar.make(recyclerView,"종료가 취소되었습니다.",Snackbar.LENGTH_SHORT).show();
+                }
+            });
+
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+        }
+
+
+    }
+
 
     public class Mytask extends AsyncTask<String, Void, Movie[]>{
 
@@ -208,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
             }
                 adapter = new MyAdapter(MainActivity.this,movieList);
                 recyclerView.setAdapter(adapter);
+            //리싸이클러뷰의 변경된 정보를 적용
                 adapter.notifyDataSetChanged();
 
         }
