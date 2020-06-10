@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:elevation="4dp"
         android:background="#7174EC"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     </com.google.android.material.appbar.AppBarLayout>

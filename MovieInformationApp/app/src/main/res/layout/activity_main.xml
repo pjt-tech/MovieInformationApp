@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:id="@+id/drawerlayout"
     tools:context=".MainActivity">
+<!--DrawerLayout 으로 감싸주어야 네비게이션 드로어(서랍) 사용가능 -->
 
     <include
        layout="@layout/drawer_main"
@@ -15,8 +16,9 @@
     </include>
 
 
+    <!--서랍으로 사용 될 뷰 -->
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/drawerView"
+        android:id="@+id/navigation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"

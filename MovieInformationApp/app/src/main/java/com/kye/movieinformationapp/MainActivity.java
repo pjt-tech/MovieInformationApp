@@ -20,8 +20,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -38,32 +43,26 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    ArrayList<Movie> movieList;
+    private ArrayList<Movie> movieList;
     private MyAdapter adapter;
-    AlertDialog.Builder builder;
-    String startMode = "mv";
+    private String startMode = "mv";
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle toggle;
+    AlertDialog.Builder builder;
+    NavigationView navigationView;
+    TextView nav_name,nav_mail;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        navigationView = findViewById(R.id.navigation);
         recyclerView = findViewById(R.id.recycler);
         drawerLayout = findViewById(R.id.drawerlayout);
         movieList = new ArrayList<>();
         builder = new AlertDialog.Builder(this);
-
-        //툴바 수동 설정
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitleTextColor(Color.parseColor("#ffffff"));
-        setSupportActionBar(toolbar);
-
-        toggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.drawer_open,R.string.drawer_close) {};
-        toggle.syncState();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_hamburger_menu);
 
         //처음 실행하면 최신영화정보를 띄움
         String search_url = "https://api.themoviedb.org/3/movie/upcoming?api_key=c8f97a0e5dbd6fd29d035cdfe7a8f4b7&language=ko-KR&page=1";
@@ -73,6 +72,60 @@ public class MainActivity extends AppCompatActivity {
 
         //리싸이클러뷰의 그리드를 사용하여 출력
         recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this,2));
+
+        //툴바 설정
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(Color.parseColor("#ffffff"));
+        setSupportActionBar(toolbar);
+
+        toggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.drawer_open,R.string.drawer_close);
+        toggle.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); //서랍 꺼내고 닫기
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_hamburger_menu); //서랍 햄버거 버튼설정
+
+        //header 부분
+        View header_View = navigationView.getHeaderView(0);
+        nav_name = header_View.findViewById(R.id.nav_name);
+        nav_mail = header_View.findViewById(R.id.nav_mail);
+
+        //header 로그인 클릭 이벤트
+        Button btn_login = header_View.findViewById(R.id.btn_login);
+        btn_login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                Snackbar.make(recyclerView,"로그인 구현중..",BaseTransientBottomBar.LENGTH_SHORT).show();
+            }
+        });
+
+        //navigationView 바디부분 메뉴버튼 클릭 이벤트
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id){
+                    case R.id.nav_list :
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                        Snackbar.make(recyclerView,"목록입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        break;
+                    case R.id.nav_book :
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                        Snackbar.make(recyclerView,"api입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        break;
+                    case R.id.nav_review :
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                        Snackbar.make(recyclerView,"예매입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        break;
+                    case R.id.nav_settings :
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                        Snackbar.make(recyclerView,"설정입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        break;
+                }
+                return true;
+            }
+        });
+
     }
 
     //툴바의 SearchView 설정
@@ -135,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] strings = {search_url};
                 Mytask mytask = new Mytask();
                 mytask.execute(strings);
+                Snackbar.make(recyclerView,"Movie transition", BaseTransientBottomBar.LENGTH_SHORT).show();
                 startMode = "mv";
                 return true;
 
@@ -143,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] strings1 = {search_url1};
                 Mytask mytask1 = new Mytask();
                 mytask1.execute(strings1);
+                Snackbar.make(recyclerView,"TV transition", BaseTransientBottomBar.LENGTH_SHORT).show();
                 startMode = "tv";
                 return true;
 
@@ -153,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
 
     @Override
     public void onBackPressed() {
@@ -184,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
 
     public class Mytask extends AsyncTask<String, Void, Movie[]>{
 

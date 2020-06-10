@@ -5,7 +5,7 @@
     android:layout_height="220dp"
     android:orientation="vertical"
     android:background="@drawable/main_background">
-
+    <!-- 네비게이션 헤더 부분 -->
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="72dp"
