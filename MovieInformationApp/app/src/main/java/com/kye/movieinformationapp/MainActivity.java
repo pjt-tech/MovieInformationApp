@@ -1,6 +1,7 @@
 package com.kye.movieinformationapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -28,12 +30,16 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.kye.movieinformationapp.data.Movie;
 import com.kye.movieinformationapp.data.MyAdapter;
+import com.kye.movieinformationapp.login.LoginActivity;
+import com.kye.movieinformationapp.login.UserSettingActivity;
 
 import java.util.ArrayList;
 import okhttp3.OkHttpClient;
@@ -51,12 +57,16 @@ public class MainActivity extends AppCompatActivity {
     AlertDialog.Builder builder;
     NavigationView navigationView;
     TextView nav_name,nav_mail;
+    Button btn_login;
+    FirebaseAuth auth;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        auth = FirebaseAuth.getInstance();
 
         navigationView = findViewById(R.id.navigation);
         recyclerView = findViewById(R.id.recycler);
@@ -90,12 +100,20 @@ public class MainActivity extends AppCompatActivity {
         nav_mail = header_View.findViewById(R.id.nav_mail);
 
         //header 로그인 클릭 이벤트
-        Button btn_login = header_View.findViewById(R.id.btn_login);
+        btn_login = header_View.findViewById(R.id.btn_login);
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                Snackbar.make(recyclerView,"로그인 구현중..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                if(btn_login.getText().equals("로그아웃")){
+                    nav_name.setText("비회원");
+                    nav_mail.setText("이메일");
+                    btn_login.setText("로그인");
+                    auth.signOut();
+                    Snackbar.make(recyclerView,"로그아웃 되었습니다.",BaseTransientBottomBar.LENGTH_SHORT).show();
+                }else{
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivityForResult(intent,1000);
+                }
             }
         });
 
@@ -118,8 +136,12 @@ public class MainActivity extends AppCompatActivity {
                         Snackbar.make(recyclerView,"예매입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
                         break;
                     case R.id.nav_settings :
-                        drawerLayout.closeDrawer(GravityCompat.START);
-                        Snackbar.make(recyclerView,"설정입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        if(btn_login.getText().equals("로그인")) {
+                            Snackbar.make(recyclerView, "먼저 로그인을 해주세요.", BaseTransientBottomBar.LENGTH_SHORT).show();
+                        }else {
+                            Intent intent = new Intent(MainActivity.this, UserSettingActivity.class);
+                            startActivity(intent);
+                        }
                         break;
                 }
                 return true;
@@ -237,6 +259,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==1000 && resultCode==RESULT_OK){
+            String mail = data.getStringExtra("mail");
+            nav_name.setText("TMDB 회원입니다.");
+            nav_mail.setText(mail+"으로 로그인하였습니다.");
+            btn_login.setText("로그아웃");
+        }
     }
 
     public class Mytask extends AsyncTask<String, Void, Movie[]>{

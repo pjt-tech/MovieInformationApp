@@ -12,6 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".login.UserSettingActivity"></activity>
+        <activity android:name=".login.FindActivity" />
+        <activity android:name=".login.RegisterActivity" />
+        <activity android:name=".login.LoginActivity" />
         <activity android:name=".IntroActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,10 +26,8 @@
         <activity
             android:name=".DetailActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".MainActivity">
-
-        </activity>
+            android:screenOrientation="portrait" />
+        <activity android:name=".MainActivity" />
     </application>
 
 </manifest>
