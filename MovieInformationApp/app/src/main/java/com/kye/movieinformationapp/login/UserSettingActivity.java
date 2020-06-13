@@ -5,12 +5,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,9 +24,11 @@ public class UserSettingActivity extends AppCompatActivity {
 
     TextView txt_mail,txt_pw,txt_revoke;
     Button btn_in,btn_out;
-
+    ImageView profile;
+    String photourl = null;
     FirebaseAuth auth;
     FirebaseUser user;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,17 +43,23 @@ public class UserSettingActivity extends AppCompatActivity {
         txt_mail = findViewById(R.id.txt_mail);
         txt_pw = findViewById(R.id.txt_pw);
         txt_revoke = findViewById(R.id.txt_revoke);
+        profile = findViewById(R.id.profile);
 
         txt_mail.setText(user.getEmail());
+        intent = getIntent();
+        photourl = intent.getStringExtra("url");
+        if(photourl!=null){
+            Glide.with(this).load(photourl).into(profile);
+        }
 
         btn_in = findViewById(R.id.btn_in);
         btn_out = findViewById(R.id.btn_out);
 
         btn_in.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getApplicationContext(),"설정이 저장되었습니다.",Toast.LENGTH_SHORT).show();
-                finish();
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getApplicationContext(),"설정이 저장되었습니다.",Toast.LENGTH_SHORT).show();
+                        finish();
             }
         });
         btn_out.setOnClickListener(new View.OnClickListener() {
@@ -73,7 +84,10 @@ public class UserSettingActivity extends AppCompatActivity {
                         user.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
+                                Intent intent = new Intent();
                                 Toast.makeText(getApplicationContext(),"계정이 삭제되었습니다.",Toast.LENGTH_SHORT).show();
+                                setResult(2,intent);
+                                finish();
                             }
                         });
                     }
@@ -85,6 +99,7 @@ public class UserSettingActivity extends AppCompatActivity {
                     }
                 });
                 builder.show();
+
             }
         });
     }

@@ -17,6 +17,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,9 +25,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -52,13 +55,16 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Movie> movieList;
     private MyAdapter adapter;
     private String startMode = "mv";
-    DrawerLayout drawerLayout;
-    ActionBarDrawerToggle toggle;
-    AlertDialog.Builder builder;
-    NavigationView navigationView;
-    TextView nav_name,nav_mail;
-    Button btn_login;
-    FirebaseAuth auth;
+    private String photourl = null;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle toggle;
+    private AlertDialog.Builder builder;
+    private NavigationView navigationView;
+    private TextView nav_name,nav_mail;
+    private ImageView nav_img;
+    private Button btn_login;
+    private FirebaseAuth auth;
+    private Intent intent;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -98,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         View header_View = navigationView.getHeaderView(0);
         nav_name = header_View.findViewById(R.id.nav_name);
         nav_mail = header_View.findViewById(R.id.nav_mail);
+        nav_img = header_View.findViewById(R.id.nav_img);
 
         //header 로그인 클릭 이벤트
         btn_login = header_View.findViewById(R.id.btn_login);
@@ -105,13 +112,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(btn_login.getText().equals("로그아웃")){
+                    nav_img.setImageResource(R.drawable.profile);
                     nav_name.setText("비회원");
                     nav_mail.setText("이메일");
                     btn_login.setText("로그인");
                     auth.signOut();
                     Snackbar.make(recyclerView,"로그아웃 되었습니다.",BaseTransientBottomBar.LENGTH_SHORT).show();
                 }else{
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    intent = new Intent(MainActivity.this, LoginActivity.class);
                     startActivityForResult(intent,1000);
                 }
             }
@@ -125,22 +133,30 @@ public class MainActivity extends AppCompatActivity {
                 switch (id){
                     case R.id.nav_list :
                         drawerLayout.closeDrawer(GravityCompat.START);
-                        Snackbar.make(recyclerView,"목록입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
-                        break;
-                    case R.id.nav_book :
-                        drawerLayout.closeDrawer(GravityCompat.START);
-                        Snackbar.make(recyclerView,"api입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        Snackbar.make(recyclerView,"Home.",BaseTransientBottomBar.LENGTH_SHORT).show();
                         break;
                     case R.id.nav_review :
                         drawerLayout.closeDrawer(GravityCompat.START);
-                        Snackbar.make(recyclerView,"예매입니다..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.themoviedb.org/"));
+                        startActivity(intent);
+                        break;
+                    case R.id.nav_book :
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                        if(btn_login.getText().equals("로그인")){
+                            Snackbar.make(recyclerView, "먼저 로그인을 해주세요.", BaseTransientBottomBar.LENGTH_SHORT).show();
+                        }else {
+                            Snackbar.make(recyclerView,"즐겨찾기 구현중..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                        }
                         break;
                     case R.id.nav_settings :
                         if(btn_login.getText().equals("로그인")) {
                             Snackbar.make(recyclerView, "먼저 로그인을 해주세요.", BaseTransientBottomBar.LENGTH_SHORT).show();
                         }else {
-                            Intent intent = new Intent(MainActivity.this, UserSettingActivity.class);
-                            startActivity(intent);
+                            intent = new Intent(MainActivity.this, UserSettingActivity.class);
+                            if(photourl!=null){
+                                intent.putExtra("url",photourl);
+                            }
+                            startActivityForResult(intent,2000);
                         }
                         break;
                 }
@@ -266,71 +282,81 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==1000 && resultCode==RESULT_OK){
             String mail = data.getStringExtra("mail");
+            photourl = data.getStringExtra("photo");
+            if(photourl!=null){
+                Glide.with(this).load(photourl).into(nav_img); //프로필이 있으면 가져옴
+            }
             nav_name.setText("TMDB 회원입니다.");
             nav_mail.setText(mail+"으로 로그인하였습니다.");
             btn_login.setText("로그아웃");
+        }else if(resultCode==2){
+            nav_img.setImageResource(R.drawable.profile);
+            nav_name.setText("비회원");
+            nav_mail.setText("이메일");
+            btn_login.setText("로그인");
+            auth.signOut();
         }
     }
 
-    public class Mytask extends AsyncTask<String, Void, Movie[]>{
+public class Mytask extends AsyncTask<String, Void, Movie[]>{
 
-        ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+    ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            dialog.setMessage("\t로딩중...");
-            dialog.show();
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("\t로딩중...");
+        dialog.show();
 
-            movieList.clear();
+        movieList.clear();
+    }
+
+    @Override
+    protected Movie[] doInBackground(String... strings) {
+
+        //OkHttp , Gson 등을 이용하여 Json데이터를 gson으로 변환하여 자바객체(Movie)에 저장
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(strings[0])
+                .build();
+        try{
+            Response response = client.newCall(request).execute();
+            Gson gson = new GsonBuilder().create();
+            JsonParser parser = new JsonParser();
+            JsonElement rootObject = parser.parse(response.body().charStream()).getAsJsonObject().get("results");
+            Movie[] posts = gson.fromJson(rootObject, Movie[].class);
+            return posts;
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
+        return null;
+    }
 
-        @Override
-        protected Movie[] doInBackground(String... strings) {
+    @Override
+    protected void onProgressUpdate(Void... values) {
+        super.onProgressUpdate(values);
+    }
 
-            //OkHttp , Gson 등을 이용하여 Json데이터를 gson으로 변환하여 자바객체(Movie)에 저장
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(strings[0])
-                    .build();
-            try{
-                Response response = client.newCall(request).execute();
-                Gson gson = new GsonBuilder().create();
-                JsonParser parser = new JsonParser();
-                JsonElement rootObject = parser.parse(response.body().charStream()).getAsJsonObject().get("results");
-                Movie[] posts = gson.fromJson(rootObject, Movie[].class);
-                return posts;
+    @Override
+    protected void onPostExecute(Movie[] movies) {
+        super.onPostExecute(movies);
+        dialog.dismiss();
 
-            }catch (Exception e){
-                e.printStackTrace();
+        //arraylist에 gson으로 변환된 객체를 하나씩 넣어주고 arraylist로 adapter를 설정하여 화면에 출력해준다.
+        if(movies.length > 0){
+            for(Movie p : movies){
+                movieList.add(p);
             }
-            return null;
         }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
+        //결과가 없을경우
+        if(movies.length==0) {
+            Snackbar.make(recyclerView,"검색결과가 없습니다.",Snackbar.LENGTH_LONG).show();
         }
-
-        @Override
-        protected void onPostExecute(Movie[] movies) {
-            super.onPostExecute(movies);
-            dialog.dismiss();
-
-            //arraylist에 gson으로 변환된 객체를 하나씩 넣어주고 arraylist로 adapter를 설정하여 화면에 출력해준다.
-            if(movies.length > 0){
-                for(Movie p : movies){
-                    movieList.add(p);
-                    }
-                }
-            //결과가 없을경우
-            if(movies.length==0) {
-                Snackbar.make(recyclerView,"검색결과가 없습니다.",Snackbar.LENGTH_LONG).show();
-            }
-                adapter = new MyAdapter(MainActivity.this,movieList);
+        adapter = new MyAdapter(MainActivity.this,movieList);
                 recyclerView.setAdapter(adapter);
-            //리싸이클러뷰의 변경된 정보를 적용
+                //리싸이클러뷰의 변경된 정보를 적용
                 adapter.notifyDataSetChanged();
 
         }
