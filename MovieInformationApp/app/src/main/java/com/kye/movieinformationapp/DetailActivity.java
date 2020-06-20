@@ -1,9 +1,11 @@
 package com.kye.movieinformationapp;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -58,9 +60,12 @@ public class DetailActivity extends YouTubeBaseActivity {
         txt_popularity = findViewById(R.id.txt_popularity);
         txt_favorite = findViewById(R.id.txt_favorite);
         poster = findViewById(R.id.poster);
+        Button btn_search = findViewById(R.id.btn_search);
+        Button btn_nation = findViewById(R.id.btn_nation);
+
 
         //Intent로 넘겨받은 데이터를 저장하고
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         id = intent.getStringExtra("id");
         title = intent.getStringExtra("title");
         original_title = intent.getStringExtra("original_title");
@@ -122,6 +127,28 @@ public class DetailActivity extends YouTubeBaseActivity {
         YoutubeAsynctask asynctask = new YoutubeAsynctask();
         //id 값으로 구분하여 예고편을 틀어주기 위함 doInBackground 파라미터변수로 던져줌
         asynctask.execute(id);
+
+        //구글 토렌트 검색
+        btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String torrent = original_title + " " +title + " 토렌트";
+                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                intent.putExtra(SearchManager.QUERY,torrent);
+                startActivity(intent);
+            }
+        });
+
+        //구글 자막 검색
+        btn_nation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nation = original_title + " " +title + " 자막";
+                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                intent.putExtra(SearchManager.QUERY,nation);
+                startActivity(intent);
+            }
+        });
 
     }
 
