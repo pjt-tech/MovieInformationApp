@@ -15,6 +15,8 @@ public class Movie {
     private String vote_average;
     private String popularity;
 
+    //movie, tv 정보를 가져
+
     public Movie(String id ,String title,String original_title,String poster_path,String overview,String popularity,
                  String backdrop_path,String release_date,String name,String first_air_date,String original_name,String vote_average){
         this.id = id;

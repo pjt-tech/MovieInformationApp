@@ -32,6 +32,7 @@ public class DetailActivity extends YouTubeBaseActivity {
     ImageView poster;
     //인텐트로 넘어온 영화&드라마 정보데이터 값
     String title,original_title,release_date,overview,img_poster,name,first_air_date,original_name,vote_average,popularity;
+    String check = null;
 
     private ArrayList<Youtube> youtubelist;
     private boolean isSelector = false;
@@ -70,6 +71,7 @@ public class DetailActivity extends YouTubeBaseActivity {
         original_name = intent.getStringExtra("original_name");
         vote_average = intent.getStringExtra("vote_average");
         popularity = intent.getStringExtra("popularity");
+        check = intent.getStringExtra("check");
         //poster
         img_poster = "https://image.tmdb.org/t/p/w500"+intent.getStringExtra("poster");
         Glide.with(this).load(img_poster).centerCrop().crossFade().into(poster);
@@ -94,9 +96,16 @@ public class DetailActivity extends YouTubeBaseActivity {
             txt_popularity.setText(popularity+"명");
         }
 
+        if(check==null){
+            txt_favorite.setVisibility(View.GONE);
+        }else {
+            txt_favorite.setVisibility(View.VISIBLE);
+        }
+
         txt_favorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if(isSelector!=true){
                     txt_favorite.setBackgroundResource(R.drawable.ic_action_favorite3);
                     Snackbar.make(poster,"즐겨찾기가 등록되었습니다.", BaseTransientBottomBar.LENGTH_SHORT).show();

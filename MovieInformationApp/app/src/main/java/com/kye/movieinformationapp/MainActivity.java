@@ -34,13 +34,12 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.kye.movieinformationapp.data.Movie;
-import com.kye.movieinformationapp.data.MyAdapter;
+import com.kye.movieinformationapp.data.MyRecycleAdapter;
 import com.kye.movieinformationapp.login.LoginActivity;
 import com.kye.movieinformationapp.login.UserSettingActivity;
 
@@ -53,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private ArrayList<Movie> movieList;
-    private MyAdapter adapter;
+    private MyRecycleAdapter adapter;
     private String startMode = "mv";
     private String photourl = null;
     private DrawerLayout drawerLayout;
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_login;
     private FirebaseAuth auth;
     private Intent intent;
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     btn_login.setText("로그인");
                     auth.signOut();
                     Snackbar.make(recyclerView,"로그아웃 되었습니다.",BaseTransientBottomBar.LENGTH_SHORT).show();
+                    adapter.addItem(null);
                 }else{
                     intent = new Intent(MainActivity.this, LoginActivity.class);
                     startActivityForResult(intent,1000);
@@ -163,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
     }
 
     //툴바의 SearchView 설정
@@ -217,8 +217,6 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         switch (id){
-            case R.id.action_search:
-                return true;
 
             case R.id.action_movie:
                 //처음 최신영화 추천정보를 다시 받아옴
@@ -289,6 +287,7 @@ public class MainActivity extends AppCompatActivity {
             nav_name.setText("TMDB 회원입니다.");
             nav_mail.setText(mail+"으로 로그인하였습니다.");
             btn_login.setText("로그아웃");
+            adapter.addItem("login");
         }else if(resultCode==2){
             nav_img.setImageResource(R.drawable.profile);
             nav_name.setText("비회원");
@@ -354,11 +353,13 @@ public class Mytask extends AsyncTask<String, Void, Movie[]>{
         if(movies.length==0) {
             Snackbar.make(recyclerView,"검색결과가 없습니다.",Snackbar.LENGTH_LONG).show();
         }
-        adapter = new MyAdapter(MainActivity.this,movieList);
-                recyclerView.setAdapter(adapter);
-                //리싸이클러뷰의 변경된 정보를 적용
-                adapter.notifyDataSetChanged();
 
+        if(adapter==null){
+            adapter = new MyRecycleAdapter(MainActivity.this,movieList);
+        }
+        recyclerView.setAdapter(adapter);
+        //리싸이클러뷰의 변경된 정보를 적용
+        adapter.notifyDataSetChanged();
         }
     }
 }
