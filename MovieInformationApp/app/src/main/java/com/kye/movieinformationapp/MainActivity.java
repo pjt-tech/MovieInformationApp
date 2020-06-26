@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_login;
     private FirebaseAuth auth;
     private Intent intent;
+    public static String mail;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -279,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==1000 && resultCode==RESULT_OK){
-            String mail = data.getStringExtra("mail");
+            mail = data.getStringExtra("mail");
             photourl = data.getStringExtra("photo");
             if(photourl!=null){
                 Glide.with(this).load(photourl).into(nav_img); //프로필이 있으면 가져옴

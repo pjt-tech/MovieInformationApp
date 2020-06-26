@@ -12,6 +12,7 @@ package com.kye.movieinformationapp.data;
 
         import com.bumptech.glide.Glide;
         import com.kye.movieinformationapp.DetailActivity;
+        import com.kye.movieinformationapp.MainActivity;
         import com.kye.movieinformationapp.R;
 
         import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class MyRecycleAdapter extends RecyclerView.Adapter<MyRecycleAdapter.MyVi
     private ArrayList<Movie> movieList;
     private LayoutInflater inflater;
     private Context context;
-    private String check;
+    private String check; //즐겨찾기 구별
 
     public MyRecycleAdapter(Context context, ArrayList<Movie> list){
         this.context = context;

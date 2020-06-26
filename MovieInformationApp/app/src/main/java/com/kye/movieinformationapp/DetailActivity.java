@@ -2,6 +2,8 @@ package com.kye.movieinformationapp;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -20,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.kye.movieinformationapp.data.MyDbHelper;
 import com.kye.movieinformationapp.data.Youtube;
 
 import java.util.ArrayList;
@@ -38,11 +41,15 @@ public class DetailActivity extends YouTubeBaseActivity {
 
     private ArrayList<Youtube> youtubelist;
     private boolean isSelector = false;
-
     private YouTubePlayerView youTubePlayerView;
     private String trail;   //youtube 키 값을 담을 변수
     private String id; // trailer 구분하기위한 Id 를 담을 변수
     boolean selector = true; // 드라마인지 영화인지 구분하기 위한 boolean 변수
+
+    //database관련
+    Cursor cursor;
+    private static int version = 5;
+    private SQLiteDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +88,6 @@ public class DetailActivity extends YouTubeBaseActivity {
         img_poster = "https://image.tmdb.org/t/p/w500"+intent.getStringExtra("poster");
         Glide.with(this).load(img_poster).centerCrop().crossFade().into(poster);
 
-
         //저장한 데이터를 textView 설정 , 드라마 정보
         if(title==null||original_title==null||release_date==null||overview==null){
         txt_title.setText(name);
@@ -105,20 +111,43 @@ public class DetailActivity extends YouTubeBaseActivity {
             txt_favorite.setVisibility(View.GONE);
         }else {
             txt_favorite.setVisibility(View.VISIBLE);
+            //로그인 상태라면 DB를 생성하고 테이블에 데이터가 있는지 확인 , 즐겨찾기 유지 위함
+            MyDbHelper helper = new MyDbHelper(getApplicationContext(),"favorite",null,version);
+            db = helper.getWritableDatabase();
+            if(db.isOpen()){
+                String select_sql = "select * from favorite";
+                cursor = db.rawQuery(select_sql,null);
+                for(int i = 0; i<cursor.getCount(); i++){
+                    cursor.moveToNext();
+                    String submail = cursor.getString(1);
+                    String subtitle = cursor.getString(2);
+                    if(submail.equals(MainActivity.mail)){
+                        if(subtitle.equals(txt_title.getText())){
+                            txt_favorite.setBackgroundResource(R.drawable.ic_action_favorite3);
+                        }
+                    }
+                }
+            }
         }
 
         txt_favorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //sql명령문
+                String insert_sql = "insert into favorite values (null,'"+MainActivity.mail+"','"+txt_title.getText()+"','"+txt_release_date.getText()+"')";
+                String delete_sql = "delete from favorite where title = '"+txt_title.getText()+"'";
 
                 if(isSelector!=true){
                     txt_favorite.setBackgroundResource(R.drawable.ic_action_favorite3);
                     Snackbar.make(poster,"즐겨찾기가 등록되었습니다.", BaseTransientBottomBar.LENGTH_SHORT).show();
                     isSelector = true;
+                    db.execSQL(insert_sql);
+
                 }else {
                     txt_favorite.setBackgroundResource(R.drawable.ic_action_favorite2);
                     Snackbar.make(poster,"즐겨찾기가 해제되었습니다.", BaseTransientBottomBar.LENGTH_SHORT).show();
                     isSelector = false;
+                    db.execSQL(delete_sql);
                 }
             }
         });
