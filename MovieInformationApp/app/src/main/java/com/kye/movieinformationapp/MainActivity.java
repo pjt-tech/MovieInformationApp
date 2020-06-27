@@ -147,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
                         if(btn_login.getText().equals("로그인")){
                             Snackbar.make(recyclerView, "먼저 로그인을 해주세요.", BaseTransientBottomBar.LENGTH_SHORT).show();
                         }else {
-                            Snackbar.make(recyclerView,"즐겨찾기 구현중..",BaseTransientBottomBar.LENGTH_SHORT).show();
+                            intent = new Intent(getApplicationContext(),FavoriteActivity.class);
+                            startActivity(intent);
                         }
                         break;
                     case R.id.nav_settings :

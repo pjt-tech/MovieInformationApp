@@ -48,7 +48,7 @@ public class DetailActivity extends YouTubeBaseActivity {
 
     //database관련
     Cursor cursor;
-    private static int version = 5;
+    public static int version = 6;
     private SQLiteDatabase db;
 
     @Override
@@ -134,7 +134,7 @@ public class DetailActivity extends YouTubeBaseActivity {
             @Override
             public void onClick(View v) {
                 //sql명령문
-                String insert_sql = "insert into favorite values (null,'"+MainActivity.mail+"','"+txt_title.getText()+"','"+txt_release_date.getText()+"')";
+                String insert_sql = "insert into favorite values (null,'"+MainActivity.mail+"','"+txt_title.getText()+"','"+txt_release_date.getText()+"','"+img_poster+"')";
                 String delete_sql = "delete from favorite where title = '"+txt_title.getText()+"'";
 
                 if(isSelector!=true){

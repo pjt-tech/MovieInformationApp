@@ -11,7 +11,7 @@
         <item
             android:id="@+id/nav_review"
             android:icon="@drawable/ic_review"
-            android:title="영화 API"/>
+            android:title="The movie Database"/>
 
         <item
             android:id="@+id/nav_book"
@@ -28,8 +28,6 @@
                 android:icon="@drawable/ic_settings"
                 android:title="사용자 설정"/>
         </menu>
-
-
 
     </item>
 
