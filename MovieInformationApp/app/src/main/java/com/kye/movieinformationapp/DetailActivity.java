@@ -40,7 +40,7 @@ public class DetailActivity extends YouTubeBaseActivity {
     String check = null;
 
     private ArrayList<Youtube> youtubelist;
-    private boolean isSelector = false;
+    private boolean isSelector = false; //즐겨찾기 구분
     private YouTubePlayerView youTubePlayerView;
     private String trail;   //youtube 키 값을 담을 변수
     private String id; // trailer 구분하기위한 Id 를 담을 변수
@@ -124,6 +124,7 @@ public class DetailActivity extends YouTubeBaseActivity {
                     if(submail.equals(MainActivity.mail)){
                         if(subtitle.equals(txt_title.getText())){
                             txt_favorite.setBackgroundResource(R.drawable.ic_action_favorite3);
+                            isSelector = true;
                         }
                     }
                 }
@@ -136,6 +137,7 @@ public class DetailActivity extends YouTubeBaseActivity {
                 //sql명령문
                 String insert_sql = "insert into favorite values (null,'"+MainActivity.mail+"','"+txt_title.getText()+"','"+txt_release_date.getText()+"','"+img_poster+"')";
                 String delete_sql = "delete from favorite where title = '"+txt_title.getText()+"'";
+
 
                 if(isSelector!=true){
                     txt_favorite.setBackgroundResource(R.drawable.ic_action_favorite3);

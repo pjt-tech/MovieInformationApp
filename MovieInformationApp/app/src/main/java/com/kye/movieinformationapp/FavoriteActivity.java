@@ -44,6 +44,7 @@ public class FavoriteActivity extends AppCompatActivity {
         MyListAdapter adapter = new MyListAdapter(items);
         listView.setAdapter(adapter);
 
+        //해당아이디값의 즐겨찾기 목록을 SQLite 에서 검색 하여 arraylist에 담아줌
         cursor = db.rawQuery(select,null);
         for(int i = 0; i<cursor.getCount(); i++){
             cursor.moveToNext();
@@ -83,12 +84,16 @@ public class FavoriteActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+
+            //재활용의 의미
             ListItemView view = null;
             if(convertView==null){
                 view = new ListItemView(getApplicationContext());
             }else {
                 view = (ListItemView)convertView;
             }
+            //arraylist의 데이터를 가져와 layout 을 상속받는 ListItem 의 데이터에 전달하는 과정
+            //listView 에 view를 리턴
             ListItem item = items.get(position);
             view.setTitle("제목 : "+item.getTitle());
             view.setDate("개봉일 : " + item.getDate());
