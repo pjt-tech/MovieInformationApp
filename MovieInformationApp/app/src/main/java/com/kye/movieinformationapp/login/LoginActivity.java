@@ -139,9 +139,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if(result.isSuccess()){ //인증결과 성공적인지 확인
                 GoogleSignInAccount account = result.getSignInAccount(); // 구글로그인 정보를 담고 있다
                 resultLogin(account); //로그인 결과 값 출력 수행
+                //handleResult(result);
             }
         }
     }
+
+    //결과값을가져와 설정
+    private void handleResult(GoogleSignInResult result){
+        progressDialog.setMessage("로그인중입니다. 잠시만 기다려주세요..");
+        progressDialog.show();
+        if(result.isSuccess()){
+            GoogleSignInAccount account = result.getSignInAccount();
+            Intent intent = new Intent();
+            intent.putExtra("mail",account.getDisplayName());
+            intent.putExtra("photo",String.valueOf(account.getPhotoUrl()));
+            setResult(RESULT_OK,intent);
+            finish();
+            Toast.makeText(getApplicationContext(),"로그인이 완료되었습니다.",Toast.LENGTH_SHORT).show();
+        }
+        progressDialog.dismiss();
+    }
+    //결과값을가져와 설정
     private void resultLogin(final GoogleSignInAccount account) {
         AuthCredential credential  = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         auth.signInWithCredential(credential)
